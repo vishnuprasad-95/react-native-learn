@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, SafeAreaView, StyleSheet, TouchableOpacity, Alert, Modal } from 'react-native';
+import { View, Text, Image, SafeAreaView, StyleSheet, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
 import Icon from 'react-native-remix-icon';
 
 const styles = StyleSheet.create({
@@ -60,12 +60,33 @@ const styles = StyleSheet.create({
     textAlign:'center',
     paddingHorizontal : 10,
   },
+  modalBtns: {
+    flexDirection: 'row',
+    marginTop: 30,
+    width: '100%',
+    justifyContent: 'space-evenly',
+  },
+  clearBtn: {
+    backgroundColor: '#fff',
+    height: 30,
+    justifyContent: 'center',
+  },
+  clearBtnText: {
+    color: '#f00',
+    textAlign:'center',
+    paddingHorizontal : 10,
+    textDecorationLine: "underline",
+    textDecorationStyle: "solid",
+    textDecorationColor: "#f00",
+  },
+  disabledBtn: {
+    backgroundColor: '#a2a4a8',
+  },
   doneBtn: {
     backgroundColor: '#46b363',
     borderRadius: 10,
     height: 30,
     justifyContent: 'center',
-    marginTop: 30,
   },
   doneBtnText: {
     color: '#fff',
@@ -84,6 +105,7 @@ const styles = StyleSheet.create({
     padding: 35,
     alignItems: "center",
     shadowColor: "#000",
+    width: '70%',
     shadowOffset: {
       width: 0,
       height: 2
@@ -110,36 +132,58 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: "center"
+  },
+  reviewBox: {
+    marginTop: 20,
+    width: '90%',
+    borderWidth: 1,
+    borderRadius: 5,
+    height: 50,
+    padding: 10,
+  },
+  reviews: {
+    width: '80%',
+    marginVertical: 30,
+    alignItems: 'flex-start'
+  },
+  reviewTexts: {
+    marginVertical: 5,
   }
 });
 
 const App = () => {
   const [superhero, setSuperHero] = useState('Spiderman');
   const [rating, setRating] = useState(0);
+  const [review, setReview] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
 
   const alertDetails = () => {
     Alert.alert('Spider-Man is a fictional superhero created by writer-editor Stan Lee and writer-artist Steve Ditko. He first appeared in the anthology comic book Amazing Fantasy #15 (Aug. 1962) in the Silver Age of Comic Books.');
+  }
+
+  const clearModalValues = () => {
+    setRating(0);
+    setReview('');
+    setModalVisible(!modalVisible);
   }
   
   return (
     <SafeAreaView>
       <View style={[styles.root]}>
         <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          Alert.alert("Modal has been closed.");
-          setModalVisible(!modalVisible);
-        }}
-      >
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Rate {superhero}</Text>
             <TouchableOpacity
               style={styles.closeButton}
-              onPress={() => setModalVisible(!modalVisible)}>
+              onPress={clearModalValues}>
               <Text style={styles.textStyle}>X</Text>
             </TouchableOpacity>
 
@@ -152,13 +196,28 @@ const App = () => {
                 })
               }
             </View>
-            <TouchableOpacity
-              style={[styles.doneBtn]}
-              onPress={() => setModalVisible(false)}
-              underlayColor='#fff'>
-              <Text style={[styles.doneBtnText]}>Done</Text>
-            </TouchableOpacity>
-
+            <TextInput
+              style={styles.reviewBox}
+              onChangeText={setReview}
+              value={review}
+              placeholder="Enter your review..."
+              multiline={true}
+            />
+            <View style={styles.modalBtns}>
+              <TouchableOpacity
+                style={[styles.clearBtn]}
+                onPress={() => { setReview(''); setRating(0); }}
+                underlayColor='#fff'>
+                <Text style={[styles.clearBtnText]}>Clear</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.doneBtn, (!rating && !review) && styles.disabledBtn]}
+                disabled={!rating && !review}
+                onPress={() => setModalVisible(false)}
+                underlayColor='#fff'>
+                <Text style={[styles.doneBtnText]}>Done</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -182,6 +241,10 @@ const App = () => {
             })
           }
           <Text style={[styles.text, styles.greyText]}> ( {rating} )</Text>
+        </View>
+        <View style={styles.reviews}>
+          <Text style={styles.reviewTexts}>Reviews: </Text>
+          <Text style={styles.reviewTexts}>{review}</Text>
         </View>
         <TouchableOpacity
           style={[styles.rateButton]}
