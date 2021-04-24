@@ -1,21 +1,16 @@
-import {ADD_REVIEW, EDIT_REVIEW, DELETE_REVIEW} from '../constants/reviewTypes';
+import reviewTypes from '../constants/reviewTypes';
 
-const initialState = {};
-const countReducer = (state = initialState, action) => {
+const initialState = [];
+
+const reviewReducer = (state = initialState, action) => {
   switch (action.type) {
-    case ADD_REVIEW:
+    case reviewTypes.ADD_REVIEW:
+      return [...state, action.review];
+    case reviewTypes.EDIT_REVIEW:
       return {
         ...state,
       };
-    case ADD_REVIEW:
-      return {
-        ...state,
-      };
-    case EDIT_REVIEW:
-      return {
-        ...state,
-      };
-    case DELETE_REVIEW:
+    case reviewTypes.DELETE_REVIEW:
       return {
         ...state,
       };
@@ -24,4 +19,4 @@ const countReducer = (state = initialState, action) => {
   }
 };
 
-export default countReducer;
+export default reviewReducer;

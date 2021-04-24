@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,14 @@ import {
   Alert,
   Modal,
   TextInput,
+  FlatList,
 } from 'react-native';
+import {useSelector, useDispatch} from 'react-redux';
 import Icon from 'react-native-remix-icon';
+import 'react-native-get-random-values';
+import {v4 as uuidv4} from 'uuid';
+
+import reviewTypes from './store/constants/reviewTypes';
 
 const styles = StyleSheet.create({
   root: {
@@ -153,19 +159,43 @@ const styles = StyleSheet.create({
   },
   reviews: {
     width: '80%',
-    marginVertical: 30,
+    height: 300,
+    marginVertical: 25,
+  },
+  reviewHeader: {
+    textAlign: 'left',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
+  reviewItem: {
+    flexDirection: 'row',
     alignItems: 'flex-start',
+  },
+  bullet: {
+    marginTop: 4,
   },
   reviewTexts: {
     marginVertical: 5,
+    textAlign: 'left',
   },
 });
 
+const Item = ({text}) => (
+  <View style={styles.reviewItem}>
+    <Text style={styles.bullet}>• </Text>
+    <Text style={styles.reviewTexts}>{text}</Text>
+  </View>
+);
+
 const App = () => {
-  const [superhero, setSuperHero] = useState('Spiderman');
+  const dispatch = useDispatch();
+  const [superhero] = useState('Spiderman');
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+
+  const [avgRating, setAvgRating] = useState(0);
+  const reviews = useSelector((state) => state.reviews);
 
   const alertDetails = () => {
     Alert.alert(
@@ -173,11 +203,31 @@ const App = () => {
     );
   };
 
+  const submitReview = () => {
+    const payload = {
+      id: uuidv4(),
+      text: review,
+      rated: rating,
+    };
+    dispatch({type: reviewTypes.ADD_REVIEW, review: payload});
+    setRating(0);
+    setReview('');
+    setModalVisible(false);
+  };
+
   const clearModalValues = () => {
     setRating(0);
     setReview('');
     setModalVisible(!modalVisible);
   };
+
+  useEffect(() => {
+    const totalRating = reviews.reduce((acc, item) => {
+      return acc + item.rated;
+    }, 0);
+    const avg = reviews.length ? totalRating / reviews.length : 0;
+    setAvgRating(avg.toFixed(2));
+  }, [reviews]);
 
   return (
     <SafeAreaView>
@@ -244,7 +294,7 @@ const App = () => {
                     !rating && !review && styles.disabledBtn,
                   ]}
                   disabled={!rating && !review}
-                  onPress={() => setModalVisible(false)}
+                  onPress={submitReview}
                   underlayColor="#fff">
                   <Text style={[styles.doneBtnText]}>Done</Text>
                 </TouchableOpacity>
@@ -270,7 +320,7 @@ const App = () => {
             Super Power Rating:{' '}
           </Text>
           {[...Array(5)].map((e, i) => {
-            return rating >= i + 1 ? (
+            return parseFloat(avgRating).toFixed(0) >= i + 1 ? (
               <Icon
                 key={i}
                 style={styles.ratingIcons}
@@ -288,11 +338,16 @@ const App = () => {
               />
             );
           })}
-          <Text style={[styles.text, styles.greyText]}> ( {rating} )</Text>
+          <Text style={[styles.text, styles.greyText]}> ( {avgRating} )</Text>
         </View>
         <View style={styles.reviews}>
-          <Text style={styles.reviewTexts}>Reviews: </Text>
-          <Text style={styles.reviewTexts}>{review}</Text>
+          <Text style={styles.reviewHeader}>Reviews: </Text>
+          <FlatList
+            data={reviews}
+            extraData={reviews}
+            renderItem={({item}) => <Item text={item.text} />}
+            keyExtractor={(item) => item.id}
+          />
         </View>
         <TouchableOpacity
           style={[styles.rateButton]}
